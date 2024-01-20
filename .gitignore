@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Depends
+poetry.lock
+
 # C extensions
 *.so
 
