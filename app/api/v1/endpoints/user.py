@@ -58,5 +58,5 @@ async def _add_role(res = Depends(user_deps.grpc_add_role)):
 
 
 @router.delete("/delete")
-async def _delete_data(res = Depends(user_deps.grpc_delete_user)):
+async def _delete_user(res = Depends(user_deps.grpc_delete_user)):
     return create_response(data=res)

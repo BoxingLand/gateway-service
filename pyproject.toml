@@ -17,6 +17,7 @@ grpcio = "^1.60.0"
 grpcio-tools = "^1.60.0"
 fastapi-pagination = "^0.12.14"
 python-multipart = "^0.0.6"
+loguru = "^0.7.2"
 
 
 [build-system]
