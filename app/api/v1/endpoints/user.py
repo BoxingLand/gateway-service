@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 
 from app.deps import user_deps
-from app.utils.response_schema import create_response
-
+from app.dto.response.user import BoxerProfileResponseDto
+from app.utils.response_schema import create_response, IGetResponsePaginated
 
 router = APIRouter()
 
@@ -18,8 +18,8 @@ async def get_my_profile():
 
 
 @router.get("/boxers")
-async def get_boxers():
-    ...
+async def get_boxers(res = Depends(user_deps.grpc_get_boxers_filtered_pagination)):
+    return create_response(data=res)
 
 
 @router.get("/judges")

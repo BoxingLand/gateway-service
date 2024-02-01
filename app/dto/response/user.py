@@ -33,3 +33,14 @@ class UserBoxerProfileResponseDto(BaseModel):
     height: float
     athletic_distinction: str
     avatar: str
+
+class BoxerProfileResponseDto(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+    club: str | None = None
+    country: str | None = None
+    region: str | None = None
+    weight: float | None = None
+    birthday: date
+    athletic_distinction: str | None = None
+    avatar: str

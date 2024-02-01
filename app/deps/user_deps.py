@@ -1,10 +1,8 @@
-import asyncio
 from typing import Annotated
 from uuid import UUID
 
 import grpc
 from fastapi import Path, UploadFile, Depends, Query
-from loguru import logger
 
 from app.api.v1.endpoints import oauth2_scheme
 from app.client.auth import auth_pb2_grpc, auth_pb2
@@ -12,10 +10,70 @@ from app.client.user import user_pb2_grpc, user_pb2
 from app.dto.request.user import UpdateUserRequestDto, ChangePasswordRequestDto, \
     AddRoleRequestDto
 from app.dto.response.user import DeleteUserResponseDto, UpdateUserResponseDto, ChangePasswordResponseDto, \
-    AddRoleResponseDto, UserBoxerProfileResponseDto
+    AddRoleResponseDto, UserBoxerProfileResponseDto, BoxerProfileResponseDto
 from app.errors.auth_errors import TokenIncorrectError, TokenMissingRequiredClaimError, TokenDecodeError, \
     TokenExpiredSignatureError
 from app.errors.user_errors import UserNotFoundError, UserPasswordNotMatchError, UserValidateError, UserRoleExistError
+
+
+class BoxerProfileResponseDtoobj:
+    pass
+
+
+async def grpc_get_boxers_filtered_pagination(
+        first_name: str | None = None,
+        last_name: str | None = None,
+        club: str | None = None,
+        country: str | None = None,
+        region: str | None = None,
+        athletic_distinction: str | None = None,
+        sex: str | None = None,
+        min_weight: float | None = None,
+        max_weight: float | None = None,
+        min_height: float | None = None,
+        max_height: float | None = None,
+        min_age: int | None = None,
+        max_age: int | None = None,
+        min_birthday: str | None = None,
+        max_birthday: str | None = None,
+        page: int = Query(1, ge=1),
+        page_size: int = Query(10, le=100)
+):
+    async with grpc.aio.insecure_channel("localhost:50051") as channel:
+        stub = user_pb2_grpc.UserStub(channel)
+        response = stub.Boxers(user_pb2.BoxersRequest(
+            first_name=first_name,
+            last_name=last_name,
+            club=club,
+            country=country,
+            region=region,
+            athletic_distinction=athletic_distinction,
+            sex=sex,
+            min_weight=min_weight,
+            max_weight=max_weight,
+            min_height=min_height,
+            max_height=max_height,
+            min_age=min_age,
+            max_age=max_age,
+            min_birthday=min_birthday,
+            max_birthday=max_birthday,
+            page=page,
+            page_size=page_size
+        ))
+        boxers = []
+        async for obj in response:
+            boxers.append(BoxerProfileResponseDto(
+                first_name=obj.first_name,
+                last_name=obj.last_name,
+                club=obj.club,
+                country=obj.country,
+                region=obj.region,
+                weight=obj.weight,
+                birthday=obj.birthday,
+                athletic_distinction=obj.athletic_distinction,
+                avatar=obj.avatar
+            ))
+    return boxers
 
 
 async def grpc_delete_user(
@@ -184,7 +242,6 @@ async def grpc_add_role(
 async def grpc_get_boxer_by_id(
         user_id: Annotated[UUID, Path(description="The UUID id of the user")],
 ):
-
     async with grpc.aio.insecure_channel("localhost:50051") as channel:
         stub = user_pb2_grpc.UserStub(channel)
         try:
@@ -208,4 +265,3 @@ async def grpc_get_boxer_by_id(
             athletic_distinction=response.athletic_distinction,
             avatar=response.avatar
         )
-

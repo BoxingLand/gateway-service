@@ -1,7 +1,7 @@
 from datetime import date
 from enum import Enum
 
-from fastapi import UploadFile
+from fastapi import UploadFile, Query
 from pydantic import BaseModel
 
 from app.dto.request.auth import AccountType
@@ -45,3 +45,23 @@ class UpdateUserRequestDto(BaseModel):
         if self.birthday:
             d['birthday'] = self.birthday.isoformat()
         return d
+
+class GetBoxerFilteredDto(BaseModel):
+    first_name: str | None = None,
+    last_name: str | None = None,
+    club: str | None = None,
+    country: str | None = None,
+    region: str | None = None,
+    athletic_distinction: str | None = None,
+    sex: str | None = None,
+    min_weight: float | None = None,
+    max_weight: float | None = None,
+    min_height: float | None = None,
+    max_height: float | None = None,
+    min_age: int | None = None,
+    max_age: int | None = None,
+    min_birthday: str | None = None,
+    max_birthday: str | None = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, le=100)
+
