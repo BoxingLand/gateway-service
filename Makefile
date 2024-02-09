@@ -17,3 +17,9 @@ yoyo-init:
 
 ruff:
 	ruff check app
+
+build:
+	docker build -t emurashin/gateway:latest .
+
+push:
+	docker push emurashin/gateway:latest

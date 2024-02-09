@@ -10,6 +10,7 @@ class AppSettings(BaseAppSettings):
     CORS_ORIGINS: list[str] | list[AnyHttpUrl]
     APP_PORT: int | str
     USER_SERVICE_URL: str
+    AUTH_SERVICE_URL: str
 
     class Config:
         case_sensitive = True

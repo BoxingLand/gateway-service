@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.v1.api import api_router_v1
@@ -17,3 +18,4 @@ if settings.CORS_ORIGINS:
         allow_headers=["*"],
     )
 
+Instrumentator().instrument(app).expose(app)

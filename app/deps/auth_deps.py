@@ -2,6 +2,7 @@ import grpc
 
 from app.client.auth import auth_pb2_grpc, auth_pb2
 from app.client.user import user_pb2_grpc, user_pb2
+from app.core.config import settings
 from app.dto.request.auth import SignupRequestDto, SigninRequestDto, RefreshRequestDto
 from app.dto.response.auth import SigninResponseDto, SignupResponseDto, RefreshResponseDto
 from app.errors.auth_errors import TokenIncorrectError, TokenExpiredSignatureError, TokenDecodeError, \
@@ -13,7 +14,7 @@ from app.errors.user_errors import UserPasswordNotMatchError, UserEmailExistErro
 async def grpc_signup(
         signup_data: SignupRequestDto
 ) -> SignupResponseDto:
-    async with grpc.aio.insecure_channel("localhost:50051") as channel:
+    async with grpc.aio.insecure_channel(settings.USER_SERVICE_URL) as channel:
         stub = user_pb2_grpc.UserStub(channel)
         try:
             response = await stub.Signup(user_pb2.SignupRequest(
@@ -26,8 +27,6 @@ async def grpc_signup(
                 raise UserEmailExistError(email=signup_data.email)
             elif e.code() == grpc.StatusCode.ALREADY_EXISTS and e.details() == "Phone":
                 raise UserPhoneNumberExistError(phone_number=signup_data.phone_number)
-            elif e.code() == grpc.StatusCode.INTERNAL:
-                raise UserCreateError()
 
         return SignupResponseDto(message=response.message)
 
@@ -35,7 +34,7 @@ async def grpc_signup(
 async def grpc_signin(
         signin_data: SigninRequestDto
 ) -> SigninResponseDto:
-    async with grpc.aio.insecure_channel("localhost:50051") as channel:
+    async with grpc.aio.insecure_channel(settings.USER_SERVICE_URL) as channel:
         stub = user_pb2_grpc.UserStub(channel)
         try:
             response = await stub.Signin(user_pb2.SigninRequest(
@@ -58,7 +57,7 @@ async def grpc_signin(
 async def grpc_refresh(
         refresh_data: RefreshRequestDto
 ) -> RefreshResponseDto:
-    async with grpc.aio.insecure_channel("localhost:50052") as channel:
+    async with grpc.aio.insecure_channel(settings.AUTH_SERVICE_URL) as channel:
         stub = auth_pb2_grpc.AuthStub(channel)
         try:
             response = await stub.Refresh(auth_pb2.RefreshRequest(

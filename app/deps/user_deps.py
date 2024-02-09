@@ -7,6 +7,7 @@ from fastapi import Path, UploadFile, Depends, Query
 from app.api.v1.endpoints import oauth2_scheme
 from app.client.auth import auth_pb2_grpc, auth_pb2
 from app.client.user import user_pb2_grpc, user_pb2
+from app.core.config import settings
 from app.dto.request.user import UpdateUserRequestDto, ChangePasswordRequestDto, \
     AddRoleRequestDto
 from app.dto.response.user import DeleteUserResponseDto, UpdateUserResponseDto, ChangePasswordResponseDto, \
@@ -14,10 +15,6 @@ from app.dto.response.user import DeleteUserResponseDto, UpdateUserResponseDto, 
 from app.errors.auth_errors import TokenIncorrectError, TokenMissingRequiredClaimError, TokenDecodeError, \
     TokenExpiredSignatureError
 from app.errors.user_errors import UserNotFoundError, UserPasswordNotMatchError, UserValidateError, UserRoleExistError
-
-
-class BoxerProfileResponseDtoobj:
-    pass
 
 
 async def grpc_get_boxers_filtered_pagination(
@@ -39,7 +36,7 @@ async def grpc_get_boxers_filtered_pagination(
         page: int = Query(1, ge=1),
         page_size: int = Query(10, le=100)
 ):
-    async with grpc.aio.insecure_channel("localhost:50051") as channel:
+    async with grpc.aio.insecure_channel(settings.USER_SERVICE_URL) as channel:
         stub = user_pb2_grpc.UserStub(channel)
         response = stub.Boxers(user_pb2.BoxersRequest(
             first_name=first_name,
@@ -79,7 +76,7 @@ async def grpc_get_boxers_filtered_pagination(
 async def grpc_delete_user(
         access_token=Depends(oauth2_scheme),
 ) -> DeleteUserResponseDto:
-    async with grpc.aio.insecure_channel("localhost:50052") as channel:
+    async with grpc.aio.insecure_channel(settings.AUTH_SERVICE_URL) as channel:
         stub = auth_pb2_grpc.AuthStub(channel)
         try:
             response = await stub.Access(auth_pb2.AccessRequest(
@@ -95,7 +92,7 @@ async def grpc_delete_user(
             elif e.code() == grpc.StatusCode.PERMISSION_DENIED and e.details() == "TokenMissingRequiredClaim":
                 raise TokenMissingRequiredClaimError()
 
-    async with grpc.aio.insecure_channel("localhost:50051") as channel:
+    async with grpc.aio.insecure_channel(settings.USER_SERVICE_URL) as channel:
         stub = user_pb2_grpc.UserStub(channel)
         response = await stub.DeleteUser(user_pb2.DeleteUserRequest(
             user_id=response.sub
@@ -108,7 +105,7 @@ async def grpc_upload_foto(
         is_avatar: Annotated[bool, Query(description="Is user avatar")],
         access_token=Depends(oauth2_scheme),
 ):
-    async with grpc.aio.insecure_channel("localhost:50052") as channel:
+    async with grpc.aio.insecure_channel(settings.AUTH_SERVICE_URL) as channel:
         stub = auth_pb2_grpc.AuthStub(channel)
         try:
             response = await stub.Access(auth_pb2.AccessRequest(
@@ -125,7 +122,7 @@ async def grpc_upload_foto(
                 raise TokenMissingRequiredClaimError()
 
     file_content = await file.read()
-    async with grpc.aio.insecure_channel("localhost:50051") as channel:
+    async with grpc.aio.insecure_channel(settings.USER_SERVICE_URL) as channel:
         stub = user_pb2_grpc.UserStub(channel)
         response = await stub.UploadFile(user_pb2.UploadFileRequest(
             file_content=file_content,
@@ -140,7 +137,7 @@ async def grpc_update_user(
         update_user_data: UpdateUserRequestDto,
         access_token=Depends(oauth2_scheme),
 ) -> UpdateUserResponseDto:
-    async with grpc.aio.insecure_channel("localhost:50052") as channel:
+    async with grpc.aio.insecure_channel(settings.AUTH_SERVICE_URL) as channel:
         stub = auth_pb2_grpc.AuthStub(channel)
         try:
             response = await stub.Access(auth_pb2.AccessRequest(
@@ -156,7 +153,7 @@ async def grpc_update_user(
             elif e.code() == grpc.StatusCode.PERMISSION_DENIED and e.details() == "TokenMissingRequiredClaim":
                 raise TokenMissingRequiredClaimError()
 
-    async with grpc.aio.insecure_channel("localhost:50051") as channel:
+    async with grpc.aio.insecure_channel(settings.USER_SERVICE_URL) as channel:
         stub = user_pb2_grpc.UserStub(channel)
         response = await stub.UpdateUserProfile(user_pb2.UpdateUserProfileRequest(
             **update_user_data.to_dict(), user_id=response.sub
@@ -169,7 +166,7 @@ async def grpc_change_password(
         access_token=Depends(oauth2_scheme),
 
 ) -> ChangePasswordResponseDto:
-    async with grpc.aio.insecure_channel("localhost:50052") as channel:
+    async with grpc.aio.insecure_channel(settings.AUTH_SERVICE_URL) as channel:
         stub = auth_pb2_grpc.AuthStub(channel)
         try:
             response = await stub.Access(auth_pb2.AccessRequest(
@@ -185,7 +182,7 @@ async def grpc_change_password(
             elif e.code() == grpc.StatusCode.PERMISSION_DENIED and e.details() == "TokenMissingRequiredClaim":
                 raise TokenMissingRequiredClaimError()
 
-    async with grpc.aio.insecure_channel("localhost:50051") as channel:
+    async with grpc.aio.insecure_channel(settings.USER_SERVICE_URL) as channel:
         stub = user_pb2_grpc.UserStub(channel)
         try:
             response = await stub.ChangePassword(user_pb2.ChangePasswordRequest(
@@ -210,7 +207,7 @@ async def grpc_add_role(
         add_role_data: AddRoleRequestDto,
         access_token=Depends(oauth2_scheme),
 ) -> AddRoleResponseDto:
-    async with grpc.aio.insecure_channel("localhost:50052") as channel:
+    async with grpc.aio.insecure_channel(settings.AUTH_SERVICE_URL) as channel:
         stub = auth_pb2_grpc.AuthStub(channel)
         try:
             response = await stub.Access(auth_pb2.AccessRequest(
@@ -226,7 +223,7 @@ async def grpc_add_role(
             elif e.code() == grpc.StatusCode.PERMISSION_DENIED and e.details() == "TokenMissingRequiredClaim":
                 raise TokenMissingRequiredClaimError()
 
-    async with grpc.aio.insecure_channel("localhost:50051") as channel:
+    async with grpc.aio.insecure_channel(settings.USER_SERVICE_URL) as channel:
         stub = user_pb2_grpc.UserStub(channel)
         try:
             response = await stub.AddRole(user_pb2.AddRoleRequest(
@@ -242,7 +239,7 @@ async def grpc_add_role(
 async def grpc_get_boxer_by_id(
         user_id: Annotated[UUID, Path(description="The UUID id of the user")],
 ):
-    async with grpc.aio.insecure_channel("localhost:50051") as channel:
+    async with grpc.aio.insecure_channel(settings.USER_SERVICE_URL) as channel:
         stub = user_pb2_grpc.UserStub(channel)
         try:
             response = await stub.UserBoxerProfile(user_pb2.UserBoxerProfileRequest(

@@ -4,7 +4,7 @@ EXPOSE 8000
 
 WORKDIR /app
 
-COPY ./pyproject.toml ./poetry.lock /migrations/ /app/
+COPY ./pyproject.toml ./poetry.lock /app/
 
 RUN pip install --upgrade pip
 RUN pip install poetry
@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 COPY . ./
 
-CMD yoyo develop && poetry run uvicorn app.main:app --host 0.0.0.0
+CMD poetry run uvicorn app.main:app --host 0.0.0.0
